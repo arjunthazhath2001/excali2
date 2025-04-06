@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '@repo/backend-common/config'
 import { prismaClient } from '@repo/db/client'
+import "./types"
 
 const app= express()
 app.use(cors())
@@ -68,15 +69,25 @@ app.post('/signin', async(req,res)=>{
 })
 
 
-app.post('/createroom', Middleware, (req,res)=>{
+app.post('/room', Middleware, async(req,res)=>{
     const parsedBody= CreateRoomSchema.safeParse(req.body)
 
     if(!parsedBody.success){
         res.json({message:parsedBody.error.issues[0]?.message})
     }
-    const {name}= req.body
-
-    res.json({roomdId:123})
+    
+    const userId= req.userId;
+    try{
+    const room= await prismaClient.room.create({
+        data:{
+            slug:parsedBody.data?.name as string,
+            adminId:userId as string
+        }
+    })
+    res.json({roomdId:room.id})
+    } catch(e){
+        res.json("room with same name already exists")
+    }
     
 
 })

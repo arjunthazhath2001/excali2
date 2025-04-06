@@ -1,12 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {JWT_SECRET} from '@repo/backend-common/config'
 import jwt, { JwtPayload } from 'jsonwebtoken'
-
-declare module "express" {
-    interface Request {
-      userId?: string; // Add the userId property
-    }
-  }
+import "./types"
   
 export function Middleware(req:Request,res:Response,next:NextFunction){
 
