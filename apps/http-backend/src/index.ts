@@ -5,6 +5,7 @@ import {CreateUserSchema,CreateRoomSchema,SignInSchema} from '@repo/common/types
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '@repo/backend-common/config'
+import { prismaClient } from '@repo/db/client'
 
 const app= express()
 app.use(cors())
@@ -17,20 +18,24 @@ app.post('/signup', async(req,res)=>{
     if(!parsedBody.success){
         res.json({message:parsedBody.error.issues[0]?.message})
     }
-    const {username,name,password}= req.body
+    const password= req.body.password
     const hashedPassword= await bcrypt.hash(password,5)
 
-    //db call to check username already exists
+    try{
+    await prismaClient.user.create({
+        data:{
+            name:parsedBody.data?.name,
+            email: parsedBody.data?.email,
+            password: hashedPassword
 
-    if(existingUser){
-        res.json({message:"Username already exists"})
-        return
-    }
-
+        }
+    })
     //db to call to store hashedPassword and other details of user
 
     res.json({message:"User created"})    
-    
+    } catch(e){
+        res.json({message:"User already exists"})
+    }
 })
 
 
