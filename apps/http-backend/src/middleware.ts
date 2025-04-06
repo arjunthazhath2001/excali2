@@ -1,7 +1,13 @@
-import { Request,Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import {JWT_SECRET} from '@repo/backend-common/config'
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 
+declare module "express" {
+    interface Request {
+      userId?: string; // Add the userId property
+    }
+  }
+  
 export function Middleware(req:Request,res:Response,next:NextFunction){
 
     const auth= req.headers.authorization
@@ -11,7 +17,7 @@ export function Middleware(req:Request,res:Response,next:NextFunction){
 
     const token= auth?.split(" ")[1] || ""
 
-    const decodedToken= jwt.verify(token, JWT_SECRET as string)
+    const decodedToken= jwt.verify(token, JWT_SECRET as string) as JwtPayload
 
     if(decodedToken){
         req.userId= decodedToken.userId

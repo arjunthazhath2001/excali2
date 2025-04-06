@@ -22,37 +22,42 @@ app.post('/signup', async(req,res)=>{
     const hashedPassword= await bcrypt.hash(password,5)
 
     try{
-    await prismaClient.user.create({
+    const user =await prismaClient.user.create({
         data:{
-            name:parsedBody.data?.name,
-            email: parsedBody.data?.email,
+            name:parsedBody.data?.name as string,
+            email: parsedBody.data?.email as string,
             password: hashedPassword
 
         }
     })
-    //db to call to store hashedPassword and other details of user
+   
 
-    res.json({message:"User created"})    
+    res.json({message:`User created with userId:${user.id}`})    
     } catch(e){
         res.json({message:"User already exists"})
     }
 })
 
 
-app.post('/signin', (req,res)=>{
+app.post('/signin', async(req,res)=>{
     const parsedBody= SignInSchema.safeParse(req.body)
 
     if(!parsedBody.success){
-        res.json({message:parsedBody.error.issues[0]?.message})
+        res.json({message:parsedBody.error.issues})
     }
-    const {username,password}= req.body
+    const {email,password}= req.body
 
-    //db call
+    const user= await prismaClient.user.findFirstOrThrow({
+        where:{
+            email:email
+        }
+    })
+
 
     if(user){
         const verified = await bcrypt.compare(password,user.password)
         if(verified){
-            const token= jwt.sign({user._id},JWT_SECRET as string)
+            const token= jwt.sign({userId:user.id},JWT_SECRET as string)
             res.status(200).json({"token":token})
         } else{
             res.json({message:"password does not match!"})
