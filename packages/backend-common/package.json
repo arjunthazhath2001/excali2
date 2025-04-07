@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "exports":{
-    "./config":"./src/index.ts"
+  "exports": {
+    "./config": "./src/index.ts"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +12,7 @@
   "keywords": [],
   "dependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.13.10",
     "dotenv": "^16.4.7"
   },
   "author": "",
