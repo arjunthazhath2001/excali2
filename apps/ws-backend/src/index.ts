@@ -54,6 +54,47 @@ wss.on("connection", function connection(ws,req){
     })
 
     ws.on("message", function message(data){
-        ws.send(`The message sent was ${data}`)
+        const parsedData= JSON.parse(data as unknown as string)
+        
+
+        //user wishes to join the room (INTENT) and also sends a particular roomId(PAYLOAD) that he wishes to join
+        if(parsedData.type==="join_room"){
+             const user= users.find(x=>x.ws===ws)
+             user?.rooms.push(parsedData.roomId )
+        }
+
+
+        //user wishes to leave the room (INTENT) and also sends a particular roomId(PAYLOAD) that he wishes to leave
+        if(parsedData.type==="leave_room"){
+            const user= users.find(x=>x.ws===ws)
+            if(!user){
+                return
+            }
+          user.rooms= user?.rooms.filter(x=> x != parsedData.roomId)
+        }
+
+
+        //user wishes to send a message(INTENT) and also sends a particular message and roomId {PAYLOAD} that he wishes to send
+
+        if(parsedData.type=="chat"){
+            const roomId = parsedData.roomId
+            const message= parsedData.message 
+
+            users.forEach(user=>{
+                if(user.rooms.includes(roomId)){
+                    user.ws.send(JSON.stringify({
+                        type:"chat",
+                        message:message,
+                        roomId:roomId
+                    }))
+                }
+            })
+        }
+
+
+
+
+
+
     })
 })
